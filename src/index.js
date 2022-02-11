@@ -57,6 +57,21 @@ function checksTodoExists (req, res, next) {
 
 }
 
+function findUserById (req, res, next){
+	const { id } = req.params;
+	const user = users.find((users) => users.id === id);
+
+	if (!user) {
+		return res.status(400).json({
+			error: 'user not found'
+		})
+	}
+
+	req.user = user;
+
+	return next();
+}
+
 app.post('/users', (req, res) => {
 	const { name, username } = req.body;
 
@@ -78,14 +93,12 @@ app.post('/users', (req, res) => {
 
 	users.push(user);
 
-	return res.status(201).send();
+	return res.status(201).send(user);
 
 });
 
-app.get('/user', checksExistsUserAccount, (req, res) => {
-	const {
-		user
-	} = req;
+app.get('/user/:id', findUserById, (req, res) => {
+	const { user } = req;
 	return res.json(user);
 });
 
