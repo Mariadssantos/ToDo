@@ -38,6 +38,25 @@ function checksCreateTodosUserAvailability(req, res, next) {
 	}
 }
 
+function checksTodoExists (req, res, next) {
+	const { username } = req.headers;
+	const { id } = req.params;
+
+	const user = users.find((users) => users.username === username);
+	if (!user) {
+		return res.status(400).json({
+			error: 'user not found'
+		})
+	} //validando usuário
+	const todo = user.todos.find((todo) => todo.id === id);
+
+	req.user = user;
+	req.todo = todo;
+
+	return next();
+
+}
+
 app.post('/users', (req, res) => {
 	const { name, username } = req.body;
 
@@ -98,20 +117,11 @@ app.get('/todos', checksExistsUserAccount, (req, res) => {
 
 	return res.json(user.todos);
 });
-app.put('/todos/:id', checksExistsUserAccount, (req, res) => {
-	const {
-		user
-	} = req;
-	const {
-		title,
-		deadline
-	} = req.body;
-	const {
-		id
-	} = req.params;
-
-	const todo = user.todos.find((todo) => todo.id === id);
-
+app.put('/todos/:id', checksTodoExists, (req, res) => {
+	const { user, todo} = req;
+	const { title, deadline } = req.body;
+	// const { id } = req.params;
+	// const todo = user.todos.find((todo) => todo.id === id);
 	todo.title = title;
 	todo.deadline = new Date(deadline);
 
